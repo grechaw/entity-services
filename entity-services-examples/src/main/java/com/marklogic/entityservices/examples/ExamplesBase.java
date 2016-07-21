@@ -1,3 +1,18 @@
+/*
+ * Copyright 2016 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.marklogic.entityservices.examples;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,7 +38,7 @@ import java.util.Properties;
  * Base class for examples.
  * See the importJSON method for generic loading of JSON from a directory tree.
  */
-public abstract class ExamplesBase {
+abstract class ExamplesBase {
 
     private static Logger logger = LoggerFactory.getLogger(ExamplesBase.class);
 
@@ -47,7 +62,7 @@ public abstract class ExamplesBase {
         mapper = new ObjectMapper();
     }
 
-    protected void importOrDescend(Path directory, WriteHostBatcher batcher, String collection, Format format) {
+    private void importOrDescend(Path directory, WriteHostBatcher batcher, String collection, Format format) {
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
             for (Path entry : stream) {
                 if (entry.toFile().isDirectory()) {
@@ -72,12 +87,40 @@ public abstract class ExamplesBase {
         }
     }
 
+    /*
+      This method uses a document-centric approach to RDF reference data, by invoking
+      a server-side transform that parses turtle into MarkLogic XML triples.
+     */
+    public void importRDF(Path referenceDataDir, String collection) {
+
+        logger.info("RDF Load Job started");
+
+        WriteHostBatcher batcher = moveMgr.newWriteHostBatcher()
+                .withBatchSize(1)
+                .withThreadCount(1)
+                .withTransform(new ServerTransform("turtleToXml"))
+                .onBatchSuccess( (client, batch) ->  logger.info("Loaded rdf data batch") )
+                .onBatchFailure(
+                        (client, batch, throwable) -> {
+                            logger.warn("FAILURE on batch:" + batch.toString() + "\n",
+                                    throwable);
+                            throwable.printStackTrace();
+                        }
+                );
+        ;
+        ticket=moveMgr.startJob(batcher);
+
+        importOrDescend(referenceDataDir, batcher, collection, Format.TEXT);
+
+        batcher.flush();
+
+    }
 
     public void importJSON(Path jsonDirectory) throws InterruptedException, IOException {
        importJSON(jsonDirectory, null);
     }
 
-    public void importJSON(Path jsonDirectory, String toCollection) throws InterruptedException, IOException {
+    public void importJSON(Path jsonDirectory, String toCollection) throws IOException {
 
         logger.info("job started.");
 
@@ -93,7 +136,7 @@ public abstract class ExamplesBase {
                         }
                 );
 
-        ticket=moveMgr.startJob(batcher);
+        ticket = moveMgr.startJob(batcher);
 
         importOrDescend(jsonDirectory, batcher, toCollection, Format.JSON);
 

@@ -10,6 +10,9 @@ buildscript {
 }
 
 apply plugin: 'com.marklogic.ml-gradle'
+apply plugin: 'application'
+
+mainClassName = "com.marklogic.entityservices.examples.ExamplesLoader";
 
 dependencies {
     compile('com.marklogic:data-movement:1.0-SNAPSHOT') {
