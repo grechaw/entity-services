@@ -129,6 +129,7 @@ graph uri: http://grechaw.github.io/entity-types#Race-0.0.2</description>
 	      <name>duration</name>
 	      <scalar-type>dayTimeDuration</scalar-type>
 	      <val>duration</val>
+	      <nullable>true</nullable>
 	    </column>
 	    <column>
 	      <name>runByRunner</name>
