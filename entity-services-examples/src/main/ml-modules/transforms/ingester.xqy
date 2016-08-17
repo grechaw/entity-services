@@ -28,7 +28,8 @@ declare function ingester:transform(
             xdmp:document-insert(
                     concat("/runs/", $uri=>fn:substring-after("runs/")=>fn:substring-before(".json"), ".xml"),
                     race:instance-to-envelope(race:extract-instance-Run(doc($uri))),
-                    xdmp:default-permissions(), "run-envelopes")
+                    (xdmp:permission("race-reader", "read"), xdmp:permission("race-writer", "insert"), xdmp:permission("race-writer", "update")), 
+                    "run-envelopes")
         else if (fn:matches($uri, "/races/.*\.json"))
         then
             xdmp:document-insert(
