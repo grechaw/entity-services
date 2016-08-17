@@ -15,17 +15,18 @@
  */
 package com.marklogic.entityservices.examples;
 
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.datamovement.ApplyTransformListener;
 import com.marklogic.datamovement.JobTicket;
 import com.marklogic.datamovement.QueryHostBatcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Runs the load methods for entity services, rdf, and json instances.
