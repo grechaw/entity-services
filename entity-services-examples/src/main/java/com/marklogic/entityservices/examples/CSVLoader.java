@@ -15,29 +15,24 @@
  */
 package com.marklogic.entityservices.examples;
 
-import com.fasterxml.jackson.databind.MappingIterator;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.document.ServerTransform;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.datamovement.DataMovementManager;
-import com.marklogic.datamovement.JobReport;
-import com.marklogic.datamovement.JobTicket;
-import com.marklogic.datamovement.WriteHostBatcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.io.StringHandle;
+import com.marklogic.datamovement.JobReport;
+import com.marklogic.datamovement.WriteHostBatcher;
 
 /**
  *  This file is simple an example of how to load CSV files into MarkLogic.
