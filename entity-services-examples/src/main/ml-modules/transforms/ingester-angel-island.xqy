@@ -13,11 +13,11 @@ declare function ingester:transform(
 ) as document-node()?
 {
     let $uri := map:get($context, "uri")
-    let $_ := xdmp:log(("Procesing URI " || $uri))
+    let $_ := xdmp:log(("Procesing Angel Island URI " || $uri))
     let $_ :=
         if (contains($uri, "angel-island"))
         then xdmp:document-insert(
-                "/runs/" || $uri,
+                concat("/runs/", $uri=>fn:substring-before(".json"), ".xml"),
                 race:instance-to-envelope(
                 race:extract-instance-Angel-Island(doc($uri))),
                 xdmp:default-permissions(), ("run-envelopes", "angel-island"))
