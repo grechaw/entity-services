@@ -84,7 +84,7 @@ public class ExamplesLoader extends ExamplesBase {
 					// + "\n", throwable);
 					// throwable.printStackTrace();
 					System.err.println(throwable.getMessage());
-					System.err.print(String.join("\n", inPlaceBatch.getItems()));
+					System.err.print(String.join("\n", inPlaceBatch.getItems()) + "\n");
 				});
 
 		QueryHostBatcher queryHostBatcher = moveMgr.newQueryHostBatcher(qb.build()).withBatchSize(100)
@@ -108,7 +108,7 @@ public class ExamplesLoader extends ExamplesBase {
 				}).onBatchFailure((dbClient, inPlaceBatch, throwable) -> {
 					logger.error("FAILURE on batch:" + inPlaceBatch.toString() + "\n", throwable);
 					System.err.println(throwable.getMessage());
-					System.err.print(String.join("\n", inPlaceBatch.getItems()));
+					System.err.print(String.join("\n", inPlaceBatch.getItems()) + "\n");
 					// throwable.printStackTrace();
 				});
 
