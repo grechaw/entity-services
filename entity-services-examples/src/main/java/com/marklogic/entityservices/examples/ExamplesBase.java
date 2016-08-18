@@ -47,12 +47,13 @@ abstract class ExamplesBase {
 	protected JobTicket ticket;
 	protected ObjectMapper mapper;
 	protected Properties props;
+	protected DatabaseClient client;
 
 	public ExamplesBase() throws IOException {
 		props = new Properties();
 		props.load(this.getClass().getClassLoader().getResourceAsStream("application.properties"));
 
-		DatabaseClient client = DatabaseClientFactory.newClient(props.getProperty("mlHost"),
+		client = DatabaseClientFactory.newClient(props.getProperty("mlHost"),
 				Integer.parseInt(props.getProperty("mlRestPort")), new DatabaseClientFactory.DigestAuthContext(
 						props.getProperty("mlUsername"), props.getProperty("mlPassword")));
 
@@ -67,7 +68,7 @@ abstract class ExamplesBase {
 					logger.info("Reading subdirectory " + entry.getFileName().toString());
 					importOrDescend(entry, batcher, collection, format);
 				} else {
-					logger.info("Adding " + entry.getFileName().toString());
+					logger.debug("Adding " + entry.getFileName().toString());
 					String uri = entry.toString();
 					if (collection != null) {
 						DocumentMetadataHandle metadata = new DocumentMetadataHandle().withCollections(collection) //
@@ -77,7 +78,7 @@ abstract class ExamplesBase {
 					} else {
 						batcher.add(uri, new FileHandle(entry.toFile()).withFormat(format));
 					}
-					logger.info("Inserted " + format.toString() + " document " + uri);
+					logger.debug("Inserted " + format.toString() + " document " + uri);
 				}
 			}
 
@@ -96,7 +97,7 @@ abstract class ExamplesBase {
 		logger.info("RDF Load Job started");
 
 		WriteHostBatcher batcher = moveMgr.newWriteHostBatcher().withBatchSize(1).withThreadCount(1)
-				.withTransform(new ServerTransform("turtleToXml"))
+				.withTransform(new ServerTransform("turtle-to-xml"))
 				.onBatchSuccess((client, batch) -> logger.info("Loaded rdf data batch"))
 				.onBatchFailure((client, batch, throwable) -> {
 					logger.warn("FAILURE on batch:" + batch.toString() + "\n", throwable);
@@ -119,8 +120,8 @@ abstract class ExamplesBase {
 
 		logger.info("job started.");
 
-		WriteHostBatcher batcher = moveMgr.newWriteHostBatcher().withBatchSize(10).withThreadCount(2)
-				.onBatchSuccess((client, batch) -> logger.info("Loaded entity types batch"))
+		WriteHostBatcher batcher = moveMgr.newWriteHostBatcher().withBatchSize(100).withThreadCount(5)
+				.onBatchSuccess((client, batch) -> logger.info("Loaded batch of JSON documents"))
 				.onBatchFailure((client, batch, throwable) -> {
 					logger.warn("FAILURE on batch:" + batch.toString() + "\n", throwable);
 					throwable.printStackTrace();

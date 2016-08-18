@@ -36,7 +36,8 @@ declare function ingester:transform(
                     "/races/" || $uri=>fn:substring-after("races/")=>substring-before(".json") || ".xml",
                     race:instance-to-envelope(
                     race:extract-instance-Race(doc($uri))),
-                    xdmp:default-permissions(), "race-envelopes")
+                    (xdmp:permission("race-reader", "read"), xdmp:permission("race-writer", "insert"), xdmp:permission("race-writer", "update")),
+                    "race-envelopes")
         else ()
     return document { " " }
 };

@@ -13,7 +13,7 @@ import module namespace es = "http://marklogic.com/entity-services"
 (: Race, version 0.0.1                                                              :)
 (:                                                                                  :)
 (: Modification History:                                                            :)
-(: Generated at timestamp: 2016-07-30T08:43:32.509884-07:00                         :)
+(: Generated at timestamp: 2016-08-18T10:40:26.878309-07:00                         :)
 (:   Persisted by AUTHOR                                                            :)
 (:   Date: DATE                                                                     :)
 
