@@ -107,7 +107,7 @@ public class ExamplesLoader extends ExamplesBase {
                     throwable.printStackTrace();
                 });
 
-        QueryHostBatcher queryHostBatcher = moveMgr.newQueryHostBatcher(qb.build()).withBatchSize(1).withThreadCount(5)
+        QueryHostBatcher queryHostBatcher = moveMgr.newQueryHostBatcher(qb.build()).withBatchSize(10).withThreadCount(5)
                 .onUrisReady(listener).onQueryFailure((client3, exception) -> {
                     logger.error("Query error");
                 });

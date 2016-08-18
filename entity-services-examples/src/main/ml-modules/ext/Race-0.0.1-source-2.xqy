@@ -18,7 +18,7 @@ declare private function race:process-duration(
     $input-value as xs:string
 ) as xs:dayTimeDuration?
 {
-    if ($input-value eq 'DNS')
+    if ($input-value = ('DNS', 'DSQ'))
     then ()
     else
         let $tokens := tokenize($input-value, ":") ! xs:decimal(.)
@@ -64,9 +64,9 @@ declare function race:extract-instance-Runner(
     json:object()
      (: This line identifies the type of this instance.  Do not change it. :)
      =>map:with('$type', 'Runner')
-     =>   map:with('name',                   xs:string#1($source-node/node("First name")))
-     =>   map:with('age',                    xs:decimal#1($source-node/Age))
-     =>es:optional('gender',                 xs:string#1($source-node/Gender))
+     =>   map:with('name',                   xs:string($source-node/Name))
+     =>   map:with('age',                    xs:decimal($source-node/Age))
+     =>es:optional('gender',                 xs:string($source-node/Gender))
 
 };
 

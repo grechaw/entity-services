@@ -96,7 +96,7 @@ abstract class ExamplesBase {
 
 		logger.info("RDF Load Job started");
 
-		WriteHostBatcher batcher = moveMgr.newWriteHostBatcher().withBatchSize(1).withThreadCount(1)
+		WriteHostBatcher batcher = moveMgr.newWriteHostBatcher().withBatchSize(10).withThreadCount(1)
 				.withTransform(new ServerTransform("turtle-to-xml"))
 				.onBatchSuccess((client, batch) -> logger.info("Loaded rdf data batch"))
 				.onBatchFailure((client, batch, throwable) -> {
