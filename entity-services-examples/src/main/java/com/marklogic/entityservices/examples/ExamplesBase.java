@@ -15,6 +15,16 @@
  */
 package com.marklogic.entityservices.examples;
 
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
@@ -26,14 +36,6 @@ import com.marklogic.client.io.Format;
 import com.marklogic.datamovement.DataMovementManager;
 import com.marklogic.datamovement.JobTicket;
 import com.marklogic.datamovement.WriteHostBatcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Properties;
 
 /**
  * Base class for examples. See the importJSON method for generic loading of
@@ -100,8 +102,12 @@ abstract class ExamplesBase {
 				.withTransform(new ServerTransform("turtle-to-xml"))
 				.onBatchSuccess((client, batch) -> logger.info("Loaded rdf data batch"))
 				.onBatchFailure((client, batch, throwable) -> {
-					logger.warn("FAILURE on batch:" + batch.toString() + "\n", throwable);
-					throwable.printStackTrace();
+					logger.error("FAILURE on batch:" + batch.toString() + "\n", throwable);
+					System.err.println(throwable.getMessage());
+					System.err.print(String.join("\n",
+							(CharSequence[]) Arrays.stream(batch.getItems()).map(item -> item.getTargetUri()).toArray())
+							+ "\n\n");
+					// throwable.printStackTrace();
 				});
 		;
 		ticket = moveMgr.startJob(batcher);
@@ -123,8 +129,11 @@ abstract class ExamplesBase {
 		WriteHostBatcher batcher = moveMgr.newWriteHostBatcher().withBatchSize(100).withThreadCount(5)
 				.onBatchSuccess((client, batch) -> logger.info("Loaded batch of JSON documents"))
 				.onBatchFailure((client, batch, throwable) -> {
-					logger.warn("FAILURE on batch:" + batch.toString() + "\n", throwable);
-					throwable.printStackTrace();
+					logger.error("FAILURE on batch:" + batch.toString() + "\n", throwable);
+					System.err.print(String.join("\n",
+							(CharSequence[]) Arrays.stream(batch.getItems()).map(item -> item.getTargetUri()).toArray())
+							+ "\n\n");
+					// throwable.printStackTrace();
 				});
 
 		ticket = moveMgr.startJob(batcher);

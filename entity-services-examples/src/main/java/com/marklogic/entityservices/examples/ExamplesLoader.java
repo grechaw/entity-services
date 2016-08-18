@@ -33,109 +33,118 @@ import com.marklogic.datamovement.QueryHostBatcher;
  */
 public class ExamplesLoader extends ExamplesBase {
 
-    private static Logger logger = LoggerFactory.getLogger(ExamplesLoader.class);
+	private static Logger logger = LoggerFactory.getLogger(ExamplesLoader.class);
 
-    public ExamplesLoader() throws IOException {
-        super();
-    }
+	public ExamplesLoader() throws IOException {
+		super();
+	}
 
-    public Thread modelsLoad() {
-        Runnable task = () -> {
-            try {
-                importJSON(Paths.get(props.getProperty("projectDir") + "/data/models"),
-                        "http://marklogic.com/entity-services/models");
-            } catch (IOException e) {
-                logger.error("IOException thrown by loader.");
-            }
-        };
-        task.run();
-        return new Thread(task);
-    }
+	public Thread modelsLoad() {
+		Runnable task = () -> {
+			try {
+				importJSON(Paths.get(props.getProperty("projectDir") + "/data/models"),
+						"http://marklogic.com/entity-services/models");
+			} catch (IOException e) {
+				logger.error("IOException thrown by loader.");
+			}
+		};
+		task.run();
+		return new Thread(task);
+	}
 
-    public Thread instanceLoad() {
-        Runnable task = () -> {
-            try {
-                importJSON(Paths.get(props.getProperty("projectDir") + "/data/race-data"), "raw");
-            } catch (IOException e) {
-                logger.error("IOException thrown by loader.");
-            }
-        };
-        task.run();
-        return new Thread(task);
-    }
+	public Thread instanceLoad() {
+		Runnable task = () -> {
+			try {
+				importJSON(Paths.get(props.getProperty("projectDir") + "/data/race-data"), "raw");
+			} catch (IOException e) {
+				logger.error("IOException thrown by loader.");
+			}
+		};
+		task.run();
+		return new Thread(task);
+	}
 
-    public Thread rdfLoad() {
-        Runnable task = () -> {
-            importRDF(Paths.get(props.getProperty("projectDir") + "/data/third-party/rdf"), "reference");
-        };
-        task.run();
-        return new Thread(task);
-    }
+	public Thread rdfLoad() {
+		Runnable task = () -> {
+			importRDF(Paths.get(props.getProperty("projectDir") + "/data/third-party/rdf"), "reference");
+		};
+		task.run();
+		return new Thread(task);
+	}
 
-    public void harmonize() throws InterruptedException {
-        StructuredQueryBuilder qb = new StructuredQueryBuilder();
-        qb.collection("raw");
-        ServerTransform ingester = new ServerTransform("ingester");
-        ApplyTransformListener listener = new ApplyTransformListener().withTransform(ingester)
-                .withApplyResult(ApplyTransformListener.ApplyResult.IGNORE).onSuccess((dbClient, inPlaceBatch) -> {
-                    logger.debug("Batch transform SUCCESS");
-                }).onBatchFailure((dbClient, inPlaceBatch, throwable) -> {
-                    logger.warn("FAILURE on batch:" + inPlaceBatch.toString() + "\n", throwable);
-                    throwable.printStackTrace();
-                });
+	public void harmonize() throws InterruptedException {
+		StructuredQueryBuilder qb = new StructuredQueryBuilder();
+		qb.collection("raw");
+		ServerTransform ingester = new ServerTransform("ingester");
+		ApplyTransformListener listener = new ApplyTransformListener().withTransform(ingester)
+				.withApplyResult(ApplyTransformListener.ApplyResult.IGNORE).onSuccess((dbClient, inPlaceBatch) -> {
+					logger.debug("Batch transform SUCCESS");
+				}).onBatchFailure((dbClient, inPlaceBatch, throwable) -> {
+					// logger.warn("FAILURE on batch:" + inPlaceBatch.toString()
+					// + "\n", throwable);
+					// throwable.printStackTrace();
+					System.err.println(throwable.getMessage());
+					System.err.print(String.join("\n", inPlaceBatch.getItems()));
+				});
 
-        QueryHostBatcher queryHostBatcher = moveMgr.newQueryHostBatcher(qb.build()).withBatchSize(100)
-                .withThreadCount(5).onUrisReady(listener).onQueryFailure((client3, exception) -> {
-                    logger.error("Query error");
-                });
+		QueryHostBatcher queryHostBatcher = moveMgr.newQueryHostBatcher(qb.build()).withBatchSize(100)
+				.withThreadCount(5).onUrisReady(listener).onQueryFailure((client3, exception) -> {
+					logger.error("Query error");
+				});
 
-        JobTicket ticket = moveMgr.startJob(queryHostBatcher);
-        queryHostBatcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
-        moveMgr.stopJob(ticket);
-    }
+		JobTicket ticket = moveMgr.startJob(queryHostBatcher);
+		queryHostBatcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+		moveMgr.stopJob(ticket);
+	}
 
-    public void secondSourceHarmonize() throws InterruptedException {
-        StructuredQueryBuilder qb = new StructuredQueryBuilder();
-        // is there a bug in collection (I think so, I have it)
-        qb.and(qb.collection("raw"), qb.collection("csv"));
-        ServerTransform ingester = new ServerTransform("ingester-angel-island");
-        ApplyTransformListener listener = new ApplyTransformListener().withTransform(ingester)
-                .withApplyResult(ApplyTransformListener.ApplyResult.IGNORE).onSuccess((dbClient, inPlaceBatch) -> {
-                    logger.debug("batch transform SUCCESS");
-                }).onBatchFailure((dbClient, inPlaceBatch, throwable) -> {
-                    logger.warn("FAILURE on batch:" + inPlaceBatch.toString() + "\n", throwable);
-                    throwable.printStackTrace();
-                });
+	public void secondSourceHarmonize() throws InterruptedException {
+		StructuredQueryBuilder qb = new StructuredQueryBuilder();
+		// is there a bug in collection (I think so, I have it)
+		qb.and(qb.collection("raw"), qb.collection("csv"));
+		ServerTransform ingester = new ServerTransform("ingester-angel-island");
+		ApplyTransformListener listener = new ApplyTransformListener().withTransform(ingester)
+				.withApplyResult(ApplyTransformListener.ApplyResult.IGNORE).onSuccess((dbClient, inPlaceBatch) -> {
+					logger.debug("batch transform SUCCESS");
+				}).onBatchFailure((dbClient, inPlaceBatch, throwable) -> {
+					logger.error("FAILURE on batch:" + inPlaceBatch.toString() + "\n", throwable);
+					System.err.println(throwable.getMessage());
+					System.err.print(String.join("\n", inPlaceBatch.getItems()));
+					// throwable.printStackTrace();
+				});
 
-        QueryHostBatcher queryHostBatcher = moveMgr.newQueryHostBatcher(qb.build()).withBatchSize(10).withThreadCount(5)
-                .onUrisReady(listener).onQueryFailure((client3, exception) -> {
-                    logger.error("Query error");
-                });
+		QueryHostBatcher queryHostBatcher = moveMgr //
+				.newQueryHostBatcher(qb.build()) //
+				.withBatchSize(10) //
+				.withThreadCount(5) //
+				.onUrisReady(listener) //
+				.onQueryFailure((client3, exception) -> {
+					logger.error("Query error");
+				});
 
-        JobTicket ticket = moveMgr.startJob(queryHostBatcher);
-        queryHostBatcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
-        moveMgr.stopJob(ticket);
-    }
+		JobTicket ticket = moveMgr.startJob(queryHostBatcher);
+		queryHostBatcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+		moveMgr.stopJob(ticket);
+	}
 
-    private void loadAsIs() {
-        modelsLoad().start();
-        instanceLoad().start();
-        rdfLoad().start();
-    }
+	private void loadAsIs() {
+		modelsLoad().start();
+		instanceLoad().start();
+		rdfLoad().start();
+	}
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+	public static void main(String[] args) throws IOException, InterruptedException {
 
-        ExamplesLoader loader = new ExamplesLoader();
-        loader.loadAsIs();
+		ExamplesLoader loader = new ExamplesLoader();
+		loader.loadAsIs();
 
-        CSVLoader integrator = new CSVLoader();
-        integrator.go();
+		CSVLoader integrator = new CSVLoader();
+		integrator.go();
 
-        logger.info("Starting harmonize");
-        loader.harmonize();
-        loader.secondSourceHarmonize();
+		logger.info("Starting harmonize");
+		loader.harmonize();
+		loader.secondSourceHarmonize();
 
-        CodeGenerator generator = new CodeGenerator();
-        generator.generate();
-    }
+		CodeGenerator generator = new CodeGenerator();
+		generator.generate();
+	}
 }
