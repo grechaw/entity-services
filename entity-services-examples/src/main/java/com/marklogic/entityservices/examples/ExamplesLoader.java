@@ -99,7 +99,6 @@ public class ExamplesLoader extends ExamplesBase {
 
 	public void secondSourceHarmonize() throws InterruptedException {
 		StructuredQueryBuilder qb = new StructuredQueryBuilder();
-		// is there a bug in collection (I think so, I have it)
 		qb.and(qb.collection("raw"), qb.collection("csv"));
 		ServerTransform ingester = new ServerTransform("ingester-angel-island");
 		ApplyTransformListener listener = new ApplyTransformListener().withTransform(ingester)
