@@ -41,6 +41,11 @@ task runExampleVersions(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     main = 'com.marklogic.entityservices.examples.versions.HubRunner'
 }
+
+task runExampleSecurity(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'com.marklogic.entityservices.examples.secure.Ingester'
+}
 task genCode(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     main = 'com.marklogic.entityservices.examples.CodeGenerator'

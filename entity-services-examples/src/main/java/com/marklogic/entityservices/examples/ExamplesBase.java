@@ -58,12 +58,17 @@ public abstract class ExamplesBase {
         return "example-races";
     };
 
+
     public ExamplesBase() {
+        this("application.properties");
+    }
+
+    public ExamplesBase(String propertiesFileName) {
         props = new Properties();
         try {
-            props.load(this.getClass().getClassLoader().getResourceAsStream("application.properties"));
+            props.load(this.getClass().getClassLoader().getResourceAsStream(propertiesFileName));
         } catch (IOException e) {
-            throw new RuntimeException("Error reading application.properties file");
+            throw new RuntimeException("Error reading " + propertiesFileName + " file");
         }
 
         client = DatabaseClientFactory.newClient(props.getProperty("mlHost"),
@@ -82,7 +87,7 @@ public abstract class ExamplesBase {
 
     }
 
-    private WriteBatcher newBatcher() {
+    protected WriteBatcher newBatcher() {
         WriteBatcher batcher = moveMgr.newWriteBatcher().withBatchSize(100).withThreadCount(5)
                 .onBatchSuccess(batch -> logger.info("Loaded batch of documents"))
                 .onBatchFailure((batch, throwable) -> {
